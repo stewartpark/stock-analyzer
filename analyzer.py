@@ -3,7 +3,8 @@
 from scipy.stats import pearsonr 
 from scipy.signal import correlate
 from pylab import show, plot, figure, title, xlabel, ylabel, legend, yticks, xticks
-from numpy import linspace, sin, cos, pi, array
+from numpy import linspace, sin, cos, pi, array, diff, real, imag
+from numpy.fft import fft, rfft
 import csv
 import dateutil
 from datetime import datetime
@@ -13,6 +14,7 @@ def normalize(a):
     for x in a:
         b.append((x - min(a)) / (max(a)-min(a)))
     return b 
+
 def totimestamp(t):
     epoch = datetime(1970, 1, 1)
     diff = t-epoch
@@ -37,56 +39,84 @@ def load_commodity(name):
     return data
 
 
+def keys(n):
+    return map(lambda x: x[0], n)
+def values(n):
+    return map(lambda x: x[1], n)
 
-aapl = load_stock('AAPL')
-start_t = min(map(lambda x: x[0], aapl))
-
-bac = load_stock('BAC')
-bac = filter(lambda x: x[0] >= start_t, bac)
-
-xom = load_stock('XOM')
-xom = filter(lambda x: x[0] >= start_t, xom)
-
-sd = load_stock('SD')
-sd = filter(lambda x: x[0] >= start_t, sd)
-
-rdsa = load_stock('RDS-A')
-rdsa = filter(lambda x: x[0] >= start_t, rdsa)
+start_t = 1078444800 # When the stock market started.
 
 oil = load_commodity('OIL')
 oil = filter(lambda x: x[0] >= start_t, oil)
 
+aapl = load_stock('AAPL')
+aapl = filter(lambda x: x[0] >= start_t and x[0] in keys(oil) , aapl)
+
+bac = load_stock('BAC')
+bac = filter(lambda x: x[0] >= start_t and x[0] in keys(oil), bac)
+
+xom = load_stock('XOM')
+xom = filter(lambda x: x[0] >= start_t and x[0] in keys(oil), xom)
+
+sd = load_stock('SD')
+sd = filter(lambda x: x[0] >= start_t and x[0] in keys(oil), sd)
+
+rdsa = load_stock('RDS-A')
+rdsa = filter(lambda x: x[0] >= start_t and x[0] in keys(oil), rdsa)
+
+
 figure()
 title('Graph of the relationship between stocks and commodities')
 
-plot(map(lambda x: x[0], aapl), map(lambda x: x[1], aapl), '--m', label='AAPL')
-plot(map(lambda x: x[0], bac), map(lambda x: x[1], bac), '--k', label='BAC')
-plot(map(lambda x: x[0], xom), map(lambda x: x[1], xom), '-g', label='XOM')
-plot(map(lambda x: x[0], sd), map(lambda x: x[1], sd), '-b', label='SD')
-plot(map(lambda x: x[0], rdsa), map(lambda x: x[1], rdsa), '-c', label='RDS/A')
-plot(map(lambda x: x[0], oil), map(lambda x: x[1], oil), '-r', label='OIL')
+plot(keys(aapl), values(aapl), '--m', label='AAPL')
+plot(keys(bac), values(bac), '--k', label='BAC')
+plot(keys(xom), values(xom), '-g', label='XOM')
+plot(keys(sd), values(sd), '-b', label='SD')
+plot(keys(rdsa), values(rdsa), '-c', label='RDS/A')
+plot(keys(oil), values(oil), '-r', label='OIL')
 legend(loc='upper right')
 
 locs, _ = yticks()
 yticks(locs, map(lambda x: "$%.2f" % x, locs))
 locs, _ = xticks()
 xticks(locs, map(lambda x: datetime.fromtimestamp(x).strftime('%Y/%m/%d'), locs))
-show()
 
 figure()
 title('Normalized graph of the relationship between stocks and commodities')
 
-plot(map(lambda x: x[0], aapl), normalize(map(lambda x: x[1], aapl)), '--m', label='AAPL')
-#plot(map(lambda x: x[0], bac), normalize(map(lambda x: x[1], bac)), '--k', label='BAC')
-#plot(map(lambda x: x[0], xom), normalize(map(lambda x: x[1], xom)), '-g', label='XOM')
-#plot(map(lambda x: x[0], sd), normalize(map(lambda x: x[1], sd)), '-b', label='SD')
-plot(map(lambda x: x[0], rdsa), normalize(map(lambda x: x[1], rdsa)), '-c', label='RDS/A')
-plot(map(lambda x: x[0], oil), normalize(map(lambda x: x[1], oil)), '-r', label='OIL')
+#plot(keys(aapl), normalize(values(aapl)), '--m', label='AAPL')
+#plot(keys(bac), normalize(values(bac)), '--k', label='BAC')
+plot(keys(xom), normalize(values(xom)), '-g', label='XOM')
+#plot(keys(sd), normalize(values(sd)), '-b', label='SD')
+#plot(keys(rdsa), normalize(values(rdsa)), '-c', label='RDS/A')
+plot(keys(oil), normalize(values(oil)), '-r', label='OIL')
 legend(loc='upper right')
 
 locs, _ = yticks()
 yticks(locs, map(lambda x: "%.3f" % x, locs))
 locs, _ = xticks()
 xticks(locs, map(lambda x: datetime.fromtimestamp(x).strftime('%Y/%m/%d'), locs))
+
+
+"""
+
+FFT.... failed.
+
+figure()
+title('Test graph of the relationship between stocks and commodities')
+plot(rfft(normalize(values(aapl))), '--m', label='AAPL')
+plot(rfft(normalize(values(bac))), '--k', label='BAC')
+plot(rfft(normalize(values(xom))), '-g', label='XOM')
+plot(rfft(normalize(values(sd))), '-b', label='SD')
+plot(rfft(normalize(values(rdsa))), '-c', label='RDS/A')
+plot(rfft(normalize(values(oil))), '-r', label='OIL')
+legend(loc='upper right')
+
+locs, _ = yticks()
+yticks(locs, map(lambda x: "%.3f" % x, locs))
+locs, _ = xticks()
+xticks(locs, map(lambda x: x, locs))
+"""
+
 show()
 
