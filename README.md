@@ -9,5 +9,5 @@ A program that determines the relationship between stocks and commodities by giv
 ### Findings (Most likely trivial... or is it?)
 
   * Oil companies' stock price rises when the oil price spikes.
-  * Coffee beans' price rise doesn't really affect the stock price of Starbucks(SBUX).
+  * the price of coffee beans is not correlated with the stock price of Starbucks(SBUX).
 
