@@ -57,7 +57,7 @@ def advcorr(x,y,name=None):
             (aka a delicately crafted correlation algorithm through dumb parametric studies.)
     """
 
-    # Decrease the samples since too many data might be noises.
+    # Decrease the samples since too much data might be noisy.
     x = sampledown_monthly(x)
     y = sampledown_monthly(y)
     y = sampledown(y, keys(x))
